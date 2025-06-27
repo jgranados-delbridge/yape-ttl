@@ -1,31 +1,30 @@
-# MongoDB TTL (Time-To-Live) Sample Project
+# Proyecto de Ejemplo MongoDB TTL (Time-To-Live)
 
-## Project Overview
+## Descripción del Proyecto
 
-This project demonstrates MongoDB's TTL (Time-To-Live) functionality using a realistic dataset of card transaction history. The goal is to create a large-scale test environment to observe how MongoDB automatically deletes documents based on a TTL field, and to measure the performance characteristics of this deletion process. Documents are set to expire 5 minutes after insertion, allowing for real-time observation of the TTL deletion process.
+Este proyecto demuestra la funcionalidad TTL (Time-To-Live) de MongoDB utilizando un conjunto de datos realista del historial de transacciones de tarjetas. El objetivo es crear un entorno de prueba a gran escala para observar cómo MongoDB elimina automáticamente documentos basándose en un campo TTL, y medir las características de rendimiento de este proceso de eliminación. Los documentos están configurados para expirar 5 minutos después de la inserción, permitiendo la observación en tiempo real del proceso de eliminación TTL.
 
-## What We Built
+## Lo que Construimos
 
-### Database Structure
-- **Database**: `yape-ttl-sample`
-- **Collection**: `cardHistory` (following MongoDB camelCase naming convention)
-- **Document Size**: ~1KB per document
-- **Total Documents**: 2.5 million records
+### Estructura de la Base de Datos
+- **Base de Datos**: `yape-ttl-sample`
+- **Colección**: `cardHistory` 
+- **Tamaño del Documento**: ~1KB por documento
+- **Total de Documentos**: 2.5 millones de registros
 
-### Key Features
-1. **TTL Index**: Documents automatically expire based on the `remove_at` field
-2. **Realistic Data**: Each document contains comprehensive card transaction metadata
-3. **Bulk Insert Performance**: Optimized batch insertion for large datasets
-4. **Monitoring Tools**: Scripts to track TTL deletion progress
+### Características Principales
+1. **Índice TTL**: Los documentos expiran automáticamente basándose en el campo `remove_at`
+2. **Datos Realistas**: Cada documento contiene metadatos completos de transacciones de tarjetas
+4. **Herramientas de Monitoreo**: Scripts para rastrear el progreso de eliminación TTL
 
-### Document Schema
+### Esquema del Documento
 ```javascript
 {
-  remove_at: Date,           // TTL field - documents expire 5 minutes after insertion
-  cardId: String,           // Unique card identifier
-  action: String,           // Transaction action type
-  timestamp: Date,          // When the action occurred
-  metadata: {               // Rich transaction data (~1KB total)
+  remove_at: Date,           // Campo TTL - documentos expiran 5 minutos después de inserción
+  cardId: String,           // Identificador único de tarjeta
+  action: String,           // Tipo de acción de transacción
+  timestamp: Date,          // Cuándo ocurrió la acción
+  metadata: {               // Datos ricos de transacción (~1KB total)
     amount: Number,
     currency: String,
     merchant: String,
@@ -38,182 +37,126 @@ This project demonstrates MongoDB's TTL (Time-To-Live) functionality using a rea
 }
 ```
 
-## Project Files
+## Archivos del Proyecto
 
-### Core Scripts
-- `setup-mongo.js` - Initial database and collection setup with TTL index
-- `test-insert.js` - Small test insertion (1,000 documents) for validation
-- `bulk-insert.js` - Main bulk insertion script (2.5M documents)
+### Scripts Principales
+- `setup-mongo.js` - Configuración inicial de base de datos y colección con índice TTL
+- `test-insert.js` - Inserción de prueba pequeña (1,000 documentos) para validación
+- `bulk-insert.js` - Script principal de inserción masiva (2.5M documentos)
 
-### Monitoring Tools
-- `monitor-ttl.js` - Check TTL status and collection information
-- `monitor-ttl-deletion.sh` - Real-time monitoring of document deletion
-- `monitor-progress.sh` - Track bulk insertion progress
+### Herramientas de Monitoreo
+- `monitor-ttl-deletion.sh` - Monitoreo en tiempo real de eliminación de documentos
 
-### Infrastructure
-- `docker-compose.yml` - MongoDB and Mongo Express containers
-- `README.md` - This documentation
+### Infraestructura
+- `docker-compose.yml` - Contenedores de MongoDB y Mongo Express
+- `README.md` - Esta documentación
 
-## Prerequisites
+## Prerrequisitos
 
-1. **Docker & Docker Compose** - For running MongoDB and Mongo Express
-2. **MongoDB Shell (mongosh)** - For running scripts
+1. **Docker & Docker Compose** - Para ejecutar MongoDB y Mongo Express
+2. **MongoDB Shell (mongosh)** - Para ejecutar scripts
    ```bash
-   brew install mongosh  # macOS with Homebrew
+   brew install mongosh  # macOS con Homebrew
    ```
 
-## Setup Instructions
+## Instrucciones de Configuración
 
-### 1. Start the Database
+### 1. Iniciar la Base de Datos
 ```bash
-cd /path/to/project
+cd /ruta/al/proyecto
 docker-compose up -d
 ```
 
-This starts:
+Esto inicia:
 - **MongoDB**: `localhost:27017` (admin/password123)
 - **Mongo Express**: `http://localhost:8081` (admin/admin123)
 
-### 2. Initialize the Database
+### 2. Inicializar la Base de Datos
 ```bash
 mongosh mongodb://admin:password123@localhost:27017/yape-ttl-sample --authenticationDatabase admin setup-mongo.js
 ```
 
-### 3. Test with Small Dataset (Optional)
+### 3. Probar con Conjunto de Datos Pequeño (Opcional)
 ```bash
 mongosh mongodb://admin:password123@localhost:27017/yape-ttl-sample --authenticationDatabase admin test-insert.js
 ```
 
-### 4. Run Full Bulk Insert
+### 4. Ejecutar Inserción Masiva Completa
 ```bash
 mongosh mongodb://admin:password123@localhost:27017/yape-ttl-sample --authenticationDatabase admin bulk-insert.js
 ```
 
-## TTL Configuration
+## Configuración TTL
 
-### Expiration Settings
-- **TTL Field**: `remove_at`
-- **Expiration Time**: Set to 5 minutes from the time the script is executed
-- **TTL Index**: `expireAfterSeconds: 0` (documents expire exactly at the `remove_at` time)
+### Configuraciones de Expiración
+- **Campo TTL**: `remove_at`
+- **Tiempo de Expiración**: Configurado a 5 minutos desde el momento de ejecución del script
+- **Índice TTL**: `expireAfterSeconds: 0` (documentos expiran exactamente en el tiempo `remove_at`)
 
-### MongoDB TTL Behavior
-- TTL background task runs approximately every 60 seconds
-- Deletion time depends on collection size and server load
-- Large collections (2.5M docs) may take several minutes to fully clear after the TTL expiration time
-- **Quick Testing**: With 5-minute expiration, you can observe the deletion process in real-time
+### Comportamiento TTL de MongoDB
+- La tarea en segundo plano TTL se ejecuta aproximadamente cada 60 segundos
+- El tiempo de eliminación depende del tamaño de la colección y la carga del servidor
+- Las colecciones grandes (2.5M docs) pueden tomar varios minutos para limpiarse completamente después del tiempo de expiración TTL
+- **Prueba Rápida**: Con expiración de 5 minutos, puedes observar el proceso de eliminación en tiempo real
 
-## Monitoring TTL Deletion
+## Monitoreo de Eliminación TTL
 
-### Real-time Monitoring
+### Monitoreo en Tiempo Real
 ```bash
 chmod +x monitor-ttl-deletion.sh
 ./monitor-ttl-deletion.sh
 ```
 
-**Note**: With 5-minute expiration, start monitoring immediately after running the bulk insert to observe the deletion process in real-time.
+**Nota**: Con expiración de 5 minutos, inicia el monitoreo inmediatamente después de ejecutar la inserción masiva para observar el proceso de eliminación en tiempo real.
 
-### TTL Status Check
-```bash
-mongosh mongodb://admin:password123@localhost:27017/yape-ttl-sample --authenticationDatabase admin monitor-ttl.js
-```
-
-### Manual Count Check
+### Verificación Manual de Conteo
 ```bash
 mongosh mongodb://admin:password123@localhost:27017/yape-ttl-sample --authenticationDatabase admin --eval "db.cardHistory.countDocuments()"
 ```
 
-## Performance Characteristics
+## Características de Rendimiento
 
-### Insertion Performance
-- **Batch Size**: 1,000 documents per batch
-- **Expected Rate**: 5,000-15,000 documents/second (varies by hardware)
-- **Total Time**: ~3-8 minutes for 2.5M documents
+### Rendimiento de Eliminación
+- **Frecuencia de Verificación TTL**: Cada ~60 segundos
+- **Tasa de Eliminación**: Varía significativamente basándose en:
+  - Tamaño y complejidad del documento
+  - Recursos del sistema disponibles
+  - Otras operaciones de base de datos
+  - Configuración del motor de almacenamiento
 
-### Deletion Performance
-- **TTL Check Frequency**: Every ~60 seconds
-- **Deletion Rate**: Varies significantly based on:
-  - Document size and complexity
-  - Available system resources
-  - Other database operations
-  - Storage engine configuration
+## Interfaz Web
 
-## Web Interface
+Accede a Mongo Express en `http://localhost:8081` para:
+- Ver la base de datos `yape-ttl-sample`
+- Navegar la colección `cardHistory`
+- Monitorear conteos de documentos en tiempo real
+- Examinar estructura de documentos e índices
 
-Access Mongo Express at `http://localhost:8081` to:
-- View the `yape-ttl-sample` database
-- Browse the `cardHistory` collection
-- Monitor document counts in real-time
-- Examine document structure and indexes
+## Casos de Uso
 
-## Use Cases
+Este proyecto es útil para:
+1. **Pruebas de Rendimiento TTL** - Entender tasas de eliminación a escala con respuesta rápida (expiración de 5 minutos)
+2. **Planificación de Capacidad de Base de Datos** - Probar uso de almacenamiento y memoria
+3. **Aprendizaje de MongoDB** - Experiencia práctica con índices TTL y observación de eliminación en tiempo real
+4. **Validación de Estrategia de Limpieza** - Probar políticas automatizadas de retención de datos con retroalimentación inmediata
 
-This project is useful for:
-1. **TTL Performance Testing** - Understanding deletion rates at scale with quick turnaround (5-minute expiration)
-2. **Database Capacity Planning** - Testing storage and memory usage
-3. **MongoDB Learning** - Hands-on experience with TTL indexes and real-time deletion observation
-4. **Cleanup Strategy Validation** - Testing automated data retention policies with immediate feedback
-
-## Key Learnings
-
-### TTL Best Practices
-- Use compound indexes when TTL field is frequently queried with other fields
-- Monitor TTL deletion performance under load
-- Consider the impact of document size on deletion speed
-- Plan for gradual deletion rather than instant removal
-
-### Performance Insights
-- Smaller batch sizes provide more reliable insertion
-- Progress reporting helps track long-running operations
-- Error handling is crucial for bulk operations
-- TTL deletion is not instantaneous for large collections
-
-## Troubleshooting
-
-### Common Issues
-1. **Slow TTL deletion**: Normal for large collections
-2. **Connection timeouts**: Check Docker container status
-3. **Memory issues**: Reduce batch size or total document count
-
-### Debug Commands
-```bash
-# Check container status
-docker ps
-
-# View MongoDB logs
-docker logs mongodb
-
-# Verify TTL index
-mongosh mongodb://admin:password123@localhost:27017/yape-ttl-sample --authenticationDatabase admin --eval "db.cardHistory.getIndexes()"
-```
-
-## Future Enhancements
-
-Potential improvements:
-- Variable TTL times for different document types
-- Compound TTL indexes for more complex expiration logic
-- Performance comparison with manual deletion strategies
-- Integration with monitoring systems (Prometheus/Grafana)
-- Automated testing of different document sizes and counts
-
----
-
-## Quick Start Summary
+## Resumen de Inicio Rápido
 
 ```bash
-# 1. Start containers
+# 1. Iniciar contenedores
 docker-compose up -d
 
-# 2. Setup database
+# 2. Configurar base de datos
 mongosh mongodb://admin:password123@localhost:27017/yape-ttl-sample --authenticationDatabase admin setup-mongo.js
 
-# 3. Run bulk insert (documents will expire in 5 minutes)
+# 3. Ejecutar inserción masiva (documentos expirarán en 5 minutos)
 mongosh mongodb://admin:password123@localhost:27017/yape-ttl-sample --authenticationDatabase admin bulk-insert.js
 
-# 4. Monitor TTL deletion (in another terminal - start immediately!)
+# 4. Monitorear eliminación TTL (en otra terminal - ¡iniciar inmediatamente!)
 ./monitor-ttl-deletion.sh
 
-# 5. View in browser
+# 5. Ver en navegador
 open http://localhost:8081
 ```
 
-This project provides a comprehensive environment for understanding and testing MongoDB's TTL functionality at scale, with quick 5-minute expiration for real-time observation.
+Este proyecto proporciona un entorno completo para entender y probar la funcionalidad TTL de MongoDB a escala, con expiración rápida de 5 minutos para observación en tiempo real.
